@@ -459,6 +459,20 @@ void manage_heater()
           pid_output = constrain(target_temperature[e], 0, PID_MAX);
     #endif //PID_OPENLOOP
     #ifdef PID_DEBUG
+	/* DEBUG Output to use arduino plot view for extruder 0 */
+	if( e == 0)
+    {
+      SERIAL_ECHO(pid_input);
+    SERIAL_ECHOPGM("\t");
+    SERIAL_ECHO(pid_output);
+    SERIAL_ECHOPGM("\t");
+    SERIAL_ECHO(pTerm[e]);
+    SERIAL_ECHOPGM("\t ");
+    SERIAL_ECHO(iTerm[e]);
+    SERIAL_ECHOPGM("\t");
+    SERIAL_ECHOLN(dTerm[e]);
+    }
+    /*SERIAL_ECHO_START;
     SERIAL_ECHO_START;
     SERIAL_ECHOPGM(" PIDDEBUG ");
     SERIAL_ECHO(e);
@@ -471,7 +485,7 @@ void manage_heater()
     SERIAL_ECHOPGM(" iTerm ");
     SERIAL_ECHO(iTerm[e]);
     SERIAL_ECHOPGM(" dTerm ");
-    SERIAL_ECHOLN(dTerm[e]);
+    SERIAL_ECHOLN(dTerm[e]);*/
     #endif //PID_DEBUG
   #else /* PID off */
     pid_output = 0;

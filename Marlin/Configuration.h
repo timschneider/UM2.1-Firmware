@@ -163,9 +163,9 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 285
-#define HEATER_1_MAXTEMP 285
-#define HEATER_2_MAXTEMP 285
+#define HEATER_0_MAXTEMP 295
+#define HEATER_1_MAXTEMP 295
+#define HEATER_2_MAXTEMP 295
 #define BED_MAXTEMP 130
 
 //Check if the heater heats up MAX_HEATING_TEMPERATURE_INCREASE within MAX_HEATING_CHECK_MILLIS while the PID was at the maximum.
@@ -209,9 +209,9 @@
     //#define  DEFAULT_Kd 70.0
 	
 // Ulticreatr 2x
-    #define  DEFAULT_Kp 15.08
-    #define  DEFAULT_Ki 2.65
-    #define  DEFAULT_Kd 21.43
+    #define  DEFAULT_Kp 6.49
+    #define  DEFAULT_Ki 0.70
+    #define  DEFAULT_Kd 20.90
 
 // Makergear
 //    #define  DEFAULT_Kp 7.0
@@ -334,7 +334,7 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define INVERT_Z_DIR true     // for Mendel set to false, for Orca set to true
 #define INVERT_E0_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E1_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E2_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E2_DIR false    // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
