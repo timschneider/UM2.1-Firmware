@@ -35,7 +35,6 @@
 #include <SPI.h>
 #endif
 
-
 //===========================================================================
 //=============================public variables  ============================
 //===========================================================================
@@ -326,6 +325,8 @@ FORCE_INLINE void trapezoid_generator_reset() {
 
 }
 
+volatile bool plusAllowed = true;
+ 
 // "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
 ISR(TIMER1_COMPA_vect)
@@ -440,7 +441,7 @@ ISR(TIMER1_COMPA_vect)
       {
         #if defined(Y_MAX_PIN) && Y_MAX_PIN > -1
           bool y_max_endstop=(READ(Y_MAX_PIN) != Y_ENDSTOPS_INVERTING);
-          if(y_max_endstop && old_y_max_endstop && (current_block->steps_y > 0)){
+          if(y_max_endstop && old_y_max_endstop && (current_block->steps_y > 0) ){
             endstops_trigsteps[Y_AXIS] = count_position[Y_AXIS];
             endstop_y_hit=true;
             step_events_completed = current_block->step_event_count;
@@ -450,6 +451,8 @@ ISR(TIMER1_COMPA_vect)
       }
     }
 
+    static float z_level_max_position = 100 * axis_steps_per_unit[Z_AXIS]; // 100mm from zero
+    
     if ((out_bits & (1<<Z_AXIS)) != 0) {   // -direction
       WRITE(Z_DIR_PIN,INVERT_Z_DIR);
 
@@ -460,15 +463,33 @@ ISR(TIMER1_COMPA_vect)
       count_direction[Z_AXIS]=-1;
       CHECK_ENDSTOPS
       {
+      #if defined(Z_MIN_AS_LEVEL_SWITCH) && defined(Z_MAX_PIN) && (Z_MAX_PIN > -1)
+      
+        if(z_manual_bed_leveling && count_position[Z_AXIS] != 0 && count_position[Z_AXIS] < z_level_max_position ) {
+            bool z_min_endstop=(READ(Z_MAX_PIN) != Z_ENDSTOPS_INVERTING);
+            if(z_min_endstop && old_z_min_endstop && (current_block->steps_z > 0)) {
+              endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
+              endstop_z_hit=true;
+              plusAllowed = true;
+              step_events_completed = current_block->step_event_count;
+            } else {
+              plusAllowed = false;
+            }
+            old_z_min_endstop = z_min_endstop;
+        } else {
+            plusAllowed = false;
+        }
+      #else
         #if defined(Z_MIN_PIN) && Z_MIN_PIN > -1
           bool z_min_endstop=(READ(Z_MIN_PIN) != Z_ENDSTOPS_INVERTING);
-          if(z_min_endstop && old_z_min_endstop && (current_block->steps_z > 0)) {
+          if (z_min_endstop && old_z_min_endstop && (current_block->steps_z > 0)){
             endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
             endstop_z_hit=true;
             step_events_completed = current_block->step_event_count;
           }
           old_z_min_endstop = z_min_endstop;
         #endif
+      #endif
       }
     }
     else { // +direction
@@ -481,12 +502,17 @@ ISR(TIMER1_COMPA_vect)
       count_direction[Z_AXIS]=1;
       CHECK_ENDSTOPS
       {
-        #if defined(Z_MAX_PIN) && Z_MAX_PIN > -1
+	  	  #if defined(Z_MAX_PIN) && Z_MAX_PIN > -1
           bool z_max_endstop=(READ(Z_MAX_PIN) != Z_ENDSTOPS_INVERTING);
           if(z_max_endstop && old_z_max_endstop && (current_block->steps_z > 0)) {
-            endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-            endstop_z_hit=true;
-            step_events_completed = current_block->step_event_count;
+            if(z_manual_bed_leveling && (count_position[Z_AXIS] == 0 || count_position[Z_AXIS] > z_level_max_position ) ) plusAllowed = false;
+            
+            if (!z_manual_bed_leveling || z_manual_bed_leveling && plusAllowed == false )
+            {
+              endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
+              endstop_z_hit=true;
+              step_events_completed = current_block->step_event_count;
+            }
           }
           old_z_max_endstop = z_max_endstop;
         #endif

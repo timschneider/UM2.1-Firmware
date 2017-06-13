@@ -153,6 +153,11 @@
 //Stepper Movement Variables
 
 //===========================================================================
+//============================semi auto bed level============================
+//===========================================================================
+float bed_level_sensor_offset = 0.0;
+volatile bool z_manual_bed_leveling = false;
+//===========================================================================
 //=============================imported variables============================
 //===========================================================================
 
@@ -975,6 +980,9 @@ void process_commands()
       break;
       #endif //FWRETRACT
     case 28: //G28 Home all Axis one at a time
+	  // disable auto/manual bed leveling
+	  z_manual_bed_leveling = false;
+	  
       printing_state = PRINT_STATE_HOMING;
       saved_feedrate = feedrate;
       saved_feedmultiply = feedmultiply;
@@ -1135,6 +1143,72 @@ void process_commands()
       previous_millis_cmd = millis();
       endstops_hit_on_purpose();
       break;
+	case 29: // G29
+	{
+		z_manual_bed_leveling = true;
+
+    enable_endstops(true);
+
+    for(int8_t i=0; i < NUM_AXIS; i++) {
+      destination[i] = current_position[i];
+    }
+
+    destination[X_AXIS] = 0; // 0mm
+    destination[Y_AXIS] = 40; // 35mm
+    destination[Z_AXIS] = 60; // 35mm
+    feedrate = 20 * 60; // mm/sec
+
+    prepare_move();
+    st_synchronize();
+      
+    feedrate = 0.0;
+
+    for( destination[X_AXIS] = 0; destination[X_AXIS] < X_MAX_LENGTH; destination[X_AXIS] +=40 )
+    {
+      for( destination[Y_AXIS] = 40; destination[Y_AXIS] < Y_MAX_LENGTH; destination[Y_AXIS] +=40 )
+      {
+        feedrate = 50 * 60; // 50mm/sec;
+        prepare_move();
+        st_synchronize();
+        
+        destination[Z_AXIS] = 35; // 35mm
+        feedrate = 5 * 60; // mm/sec;
+        prepare_move();
+        st_synchronize();
+        
+        endstops_hit_on_purpose();
+
+        SERIAL_PROTOCOLPGM("X:");
+        SERIAL_PROTOCOL(float(st_get_position(X_AXIS))/axis_steps_per_unit[X_AXIS]);
+        SERIAL_PROTOCOLPGM("Y:");
+        SERIAL_PROTOCOL(float(st_get_position(Y_AXIS))/axis_steps_per_unit[Y_AXIS]);
+        SERIAL_PROTOCOLPGM("Z:");
+        SERIAL_PROTOCOL(float(st_get_position(Z_AXIS))/axis_steps_per_unit[Z_AXIS]);
+        SERIAL_PROTOCOLLN("");
+
+        plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], float(st_get_position(Z_AXIS))/axis_steps_per_unit[Z_AXIS], current_position[E_AXIS]);
+        
+        feedrate = 10 * 60; // mm/sec;
+        destination[Z_AXIS] = 42;
+
+        prepare_move();
+        st_synchronize();
+      }
+    }
+
+    feedrate = 60 * 60; // mm/sec;
+    destination[X_AXIS] = 20;
+    destination[Y_AXIS] = 20;
+    destination[Z_AXIS] = 60;
+
+    prepare_move();
+    st_synchronize();
+
+    enable_endstops(false) ;
+    z_manual_bed_leveling = false;
+    
+		break;
+	}
     case 90: // G90
       relative_mode = false;
       break;
@@ -1707,6 +1781,16 @@ void process_commands()
         if(code_seen('T')) retract_acceleration = code_value() ;
       }
       break;
+	case 212: // M212 Set Bed Level Sensor Offset
+	{
+		if(code_seen('Z')) bed_level_sensor_offset = code_value();
+		
+		SERIAL_ECHO_START;
+      SERIAL_ECHOPAIR(" Z position:", (float)st_get_position(Z_AXIS) );
+      SERIAL_ECHOPAIR(" Z offset:", bed_level_sensor_offset);
+    SERIAL_ECHOLN("");
+	}
+		break;
     case 205: //M205 advanced settings:  minimum travel speed S=while printing T=travel only,  B=minimum segment time X= maximum xy jerk, Z=maximum Z jerk
     {
       if(code_seen('S')) minimumfeedrate = code_value();
