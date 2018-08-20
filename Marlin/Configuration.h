@@ -207,7 +207,7 @@
     //#define  DEFAULT_Kp 10.03
     //#define  DEFAULT_Ki 1.50
     //#define  DEFAULT_Kd 70.0
-	
+
 // Ulticreatr 2x
     #define  DEFAULT_Kp 6.49
     #define  DEFAULT_Ki 0.70
@@ -287,7 +287,7 @@
 #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
 #ifndef ENDSTOPPULLUPS
-  // fine endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined.
+  // Define endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined.
   #define ENDSTOPPULLUP_XMAX
   #define ENDSTOPPULLUP_YMAX
   #define ENDSTOPPULLUP_ZMAX
@@ -373,9 +373,9 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80.0,80.0,200,369}  // default steps per unit for ultimaker2.1 JarJar
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {80.0,80.0,200,369}   // default steps per unit for Ultimaker2.1 JarJar
 #define DEFAULT_MAX_FEEDRATE          {300, 300, 40, 45}    // (mm/sec)
-#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
+#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000} // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          2500    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
@@ -392,7 +392,7 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define DEFAULT_EJERK                 5.0    // (mm/sec)
 
 //Length of the bowden tube. Used for the material load/unload procedure.
-#define FILAMANT_BOWDEN_LENGTH        705
+#define FILAMENT_BOWDEN_LENGTH        705
 
 //===========================================================================
 //=============================Additional Features===========================
@@ -605,4 +605,4 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #include "Configuration_adv.h"
 #include "thermistortables.h"
 
-#endif //__CONFIGURATION_H
+#endif // CONFIGURATION_H

@@ -1,5 +1,5 @@
 /*
-  temperature.c - temperature control
+  temperature.cpp - temperature control
   Part of Marlin
 
  Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -39,7 +39,7 @@
 
 
 //===========================================================================
-//=============================public variables============================
+//============================= public variables ============================
 //===========================================================================
 int target_temperature[EXTRUDERS] = { 0 };
 int target_temperature_bed = 0;
@@ -72,7 +72,7 @@ float current_temperature_bed = 0.0;
 
 
 //===========================================================================
-//=============================private variables============================
+//============================ private variables ============================
 //===========================================================================
 static volatile bool temp_meas_ready = false;
 
@@ -158,7 +158,7 @@ unsigned long watchmillis[EXTRUDERS] = ARRAY_BY_EXTRUDERS(0,0,0);
 static int read_max6675();
 #endif
 //===========================================================================
-//=============================   functions      ============================
+//================================ Functions ================================
 //===========================================================================
 
 void PID_autotune(float temp, int extruder, int ncycles)
@@ -189,7 +189,7 @@ void PID_autotune(float temp, int extruder, int ncycles)
 
   SERIAL_ECHOLNPGM("PID Autotune start");
 
-  disable_heater(); // switch off all heaters.
+  disable_all_heaters(); // switch off all heaters.
 
   if (extruder<0)
   {
@@ -423,7 +423,7 @@ void manage_heater()
 	  min_temp_error(0);
   }
   #endif
-  for(int e = 0; e < EXTRUDERS; e++)
+  for (uint8_t e = 0; e < EXTRUDERS; e++)
   {
 
   #ifdef PIDTEMP
@@ -519,7 +519,7 @@ void manage_heater()
     #endif
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       if(fabs(current_temperature[0] - redundant_temperature) > MAX_REDUNDANT_TEMP_SENSOR_DIFF) {
-        disable_heater();
+        disable_all_heaters();
         if(IsStopped() == false) {
           SERIAL_ERROR_START;
           SERIAL_ERRORLNPGM("Extruder switched off. Temperature difference between temp sensors is too high !");
@@ -545,7 +545,7 @@ void manage_heater()
         {
             //Did not heat up MAX_HEATING_TEMPERATURE_INCREASE in MAX_HEATING_CHECK_MILLIS while the PID was at the maximum.
             //Potential problems could be that the heater is not working, or the temperature sensor is not measuring what the heater is heating.
-            disable_heater();
+            disable_all_heaters();
             Stop(STOP_REASON_HEATER_ERROR);
         }
     }else{
@@ -686,7 +686,7 @@ static float analog2temp(int raw, uint8_t e) {
     uint8_t i;
     short (*tt)[][2] = (short (*)[][2])(heater_ttbl_map[e]);
 
-    for (i=1; i<heater_ttbllen_map[e]; i++)
+    for (i = 1; i < heater_ttbllen_map[e]; i++)
     {
       if (PGM_RD_W((*tt)[i][0]) > raw)
       {
@@ -769,7 +769,8 @@ void tp_init()
 #endif
 
   // Finish init of mult extruder arrays
-  for(int e = 0; e < EXTRUDERS; e++) {
+  for (uint8_t e = 0; e < EXTRUDERS; e++)
+  {
     // populate with the first value
     maxttemp[e] = maxttemp[0];
 #ifdef PIDTEMP
@@ -964,9 +965,9 @@ void setWatch()
 }
 
 
-void disable_heater()
+void disable_all_heaters()
 {
-  for(int i=0;i<EXTRUDERS;i++)
+  for(uint8_t i = 0; i < EXTRUDERS; i++)
     setTargetHotend(0,i);
   setTargetBed(0);
   #if defined(TEMP_0_PIN) && TEMP_0_PIN > -1
@@ -1007,7 +1008,7 @@ void disable_heater()
 }
 
 void max_temp_error(uint8_t e) {
-  disable_heater();
+  disable_all_heaters();
   if(IsStopped() == false) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLN((int)e);
@@ -1020,7 +1021,7 @@ void max_temp_error(uint8_t e) {
 }
 
 void min_temp_error(uint8_t e) {
-  disable_heater();
+  disable_all_heaters();
   if(IsStopped() == false) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLN((int)e);
@@ -1107,7 +1108,7 @@ static int read_max6675()
 // Timer 0 is shared with millies
 ISR(TIMER0_COMPB_vect)
 {
-  //these variables are only accesible from the ISR, but static, so they don't lose their value
+  // These variables are only accessible from the ISR, but static, so they don't lose their value
   static unsigned char temp_count = 0;
   static unsigned long raw_temp_0_value = 0;
   static unsigned long raw_temp_1_value = 0;
@@ -1221,7 +1222,7 @@ ISR(TIMER0_COMPB_vect)
         raw_temp_2_value += ADC;
       #endif
       temp_count++;
-      //Fall trough to state 0
+      // Fall through to state 0
     case 0: // Prepare TEMP_0
       #if defined(TEMP_0_PIN) && (TEMP_0_PIN > -1)
         #if TEMP_0_PIN > 7
@@ -1244,7 +1245,7 @@ ISR(TIMER0_COMPB_vect)
 //      break;
   }
 
-  if(temp_count >= OVERSAMPLENR) // 8 ms * 16 = 128ms.
+  if (temp_count >= OVERSAMPLENR) // 8 ms * 16 = 128ms.
   {
     if (!temp_meas_ready) //Only update the raw values if they have been read. Else we could be updating them during reading.
     {
