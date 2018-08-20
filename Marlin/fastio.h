@@ -1,5 +1,5 @@
 /*
-  This code contibuted by Triffid_Hunter and modified by Kliment
+  This code contributed by Triffid_Hunter and modified by Kliment
   why double up on these macros? see http://gcc.gnu.org/onlinedocs/cpp/Stringification.html
 */
 
@@ -49,7 +49,7 @@
 #endif
 
 /// toggle a pin
-#define _TOGGLE(IO)  do {DIO ##  IO ## _RPORT = MASK(DIO ## IO ## _PIN); } while (0)
+#define _TOGGLE(IO)  do {DIO ##  IO ## _RPORT ^= MASK(DIO ## IO ## _PIN); } while (0)
 
 /// set pin as input
 #define	_SET_INPUT(IO) do {DIO ##  IO ## _DDR &= ~MASK(DIO ## IO ## _PIN); } while (0)

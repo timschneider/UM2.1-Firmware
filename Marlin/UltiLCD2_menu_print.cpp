@@ -14,6 +14,11 @@
 
 #define HEATUP_POSITION_COMMAND "G1 F12000 X5 Y10"
 
+#define LCD_CACHE_COUNT 6
+
+#define LCD_DETAIL_CACHE_SIZE (5+8*EXTRUDERS+8*EXTRUDERS)
+#define LCD_CACHE_SIZE (1 + (2 + LONG_FILENAME_LENGTH) * LCD_CACHE_COUNT + LCD_DETAIL_CACHE_SIZE)
+
 uint8_t lcd_cache[LCD_CACHE_SIZE];
 #define LCD_CACHE_NR_OF_FILES() lcd_cache[(LCD_CACHE_COUNT*(LONG_FILENAME_LENGTH+2))]
 #define LCD_CACHE_ID(n) lcd_cache[(n)]
@@ -65,7 +70,7 @@ static void abortPrint()
         // we're not printing any more
         card.sdprinting = false;
     }
-    //If we where paused, make sure we abort that pause. Else strange things happen: https://github.com/Ultimaker/Ultimaker2Marlin/issues/32
+    // If we were paused, make sure we abort that pause. Else strange things happen: https://github.com/Ultimaker/Ultimaker2Marlin/issues/32
     card.pause = false;
     pauseRequested = false;
 
@@ -104,7 +109,7 @@ static void checkPrintFinished()
         lcd_menu_print_pause();
     }
 
-    if (!card.sdprinting && !is_command_queued())
+    if (!card.sdprinting && !is_command_queued() && !blocks_queued())
     {
         abortPrint();
         currentMenu = lcd_menu_print_ready;
@@ -198,7 +203,9 @@ static char* lcd_sd_menu_filename_callback(uint8_t nr)
         for(uint8_t idx=0; idx<LCD_CACHE_COUNT; idx++)
         {
             if (LCD_CACHE_ID(idx) == nr)
+            {
                 strcpy(card.longFilename, LCD_CACHE_FILENAME(idx));
+            }
         }
         if (card.longFilename[0] == '\0')
         {
@@ -287,7 +294,7 @@ void lcd_sd_menu_details_callback(uint8_t nr)
                                 LCD_DETAIL_CACHE_MATERIAL_TYPE(1)[7] = '\0';
                             }
 #endif
-                            
+
                         }
                     }
                     if (card.errorCode())

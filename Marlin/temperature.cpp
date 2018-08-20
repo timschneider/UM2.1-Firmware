@@ -249,7 +249,7 @@ void PID_autotune(float temp, int extruder, int ncycles)
               Kp = 0.6*Ku;
               Ki = 2*Kp/Tu;
               Kd = Kp*Tu/8;
-              SERIAL_PROTOCOLLNPGM(" Clasic PID ");
+              SERIAL_PROTOCOLLNPGM(" Classic PID ");
               SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp);
               SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki);
               SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd);
@@ -825,6 +825,7 @@ void tp_init()
 
   // Set analog inputs
   ADCSRA = 1<<ADEN | 1<<ADSC | 1<<ADIF | 0x07;
+  // Disable the digital inputs that are shared with the ADC. This will reduce current consumption.
   DIDR0 = 0;
   #ifdef DIDR2
     DIDR2 = 0;
